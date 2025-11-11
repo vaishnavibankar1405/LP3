@@ -1,0 +1,45 @@
+# Import libraries
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Step 1: Define the function
+def f(x):
+    return (x + 3)**2
+
+# Step 2: Define the derivative (gradient)
+def grad_f(x):
+    return 2 * (x + 3)
+
+# Step 3: Implement Gradient Descent algorithm
+def gradient_descent(start_x=2, learning_rate=0.1, max_iter=50, tol=1e-6):
+    x = start_x
+    x_history = [x]  # to store all x values
+    
+    for i in range(max_iter):
+        gradient = grad_f(x)                  # compute gradient
+        x_new = x - learning_rate * gradient  # update rule
+        
+        x_history.append(x_new)
+        
+        if abs(x_new - x) < tol:              # check for convergence
+            break
+        
+        x = x_new
+    
+    return x, f(x), x_history
+
+# Step 4: Run Gradient Descent
+min_x, min_y, x_steps = gradient_descent()
+print("Local minima at x =", min_x)
+print("Minimum value y =", min_y)
+
+# Step 5: Visualization
+x_vals = np.linspace(-6, 2, 100)
+y_vals = f(x_vals)
+plt.plot(x_vals, y_vals, label='y = (x + 3)^2')
+plt.scatter(x_steps, [f(x) for x in x_steps], color='red', label='Gradient Descent Steps')
+plt.title("Gradient Descent to find Local Minima")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
