@@ -1,0 +1,64 @@
+# Import libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import confusion_matrix, accuracy_score
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+import matplotlib.pyplot as plt
+
+# 1. Load dataset
+df = pd.read_csv("Churn_Modelling.csv")
+df.head()
+
+# 2. Separate features and target
+X = df.iloc[:, 3:13]   # CreditScore to EstimatedSalary
+y = df.iloc[:, 13]     # Exited column (target)
+
+# 3. Encode categorical data
+labelencoder_gender = LabelEncoder()
+X['Gender'] = labelencoder_gender.fit_transform(X['Gender'])
+
+# One-hot encoding for Geography
+X = pd.get_dummies(X, columns=['Geography'], drop_first=True)
+
+# 4. Split into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+# 5. Feature scaling
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# 6. Build ANN model
+model = Sequential()
+model.add(Dense(units=6, activation='relu', input_dim=X_train.shape[1]))
+model.add(Dropout(0.3))
+model.add(Dense(units=6, activation='relu'))
+model.add(Dense(units=1, activation='sigmoid'))
+
+# 7. Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# 8. Train the model
+history = model.fit(X_train, y_train, epochs=20, batch_size=32,
+                    validation_data=(X_test, y_test))
+
+# 9. Visualize training accuracy per epoch
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Accuracy per Epoch')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+# 10. Predict and evaluate
+y_pred = (model.predict(X_test) > 0.5)  # threshold at 0.5
+acc = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+
+print("Final Accuracy: {:.2f}%".format(acc * 100))
+print("Confusion Matrix:\n", cm)
