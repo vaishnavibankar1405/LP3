@@ -1,0 +1,17 @@
+import heapq
+
+def huffman(chars, freqs):
+    heap = [[f, [c, ""]] for c, f in zip(chars, freqs)]
+    heapq.heapify(heap)
+    
+    while len(heap) > 1:
+        a, b = heapq.heappop(heap), heapq.heappop(heap)
+        for p in a[1:]: p[1] = '0' + p[1]
+        for p in b[1:]: p[1] = '1' + p[1]
+        heapq.heappush(heap, [a[0]+b[0]] + a[1:] + b[1:])
+    
+    return dict(heap[0][1:])
+
+chars = ['A','B','C','D','E']
+freqs = [5,9,12,13,16]
+print(huffman(chars, freqs))
